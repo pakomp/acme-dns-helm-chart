@@ -1,0 +1,41 @@
+{{- $fullName := include "chart.fullname" . -}}
+{{- $tcpPort := .Values.service.tcp.port -}}
+{{- $udpPort := .Values.service.udp.port -}}
+{{- $httpPort := .Values.service.http.port -}}
+{{- $name := "app" -}}
+{{- $data := dict "name" $name "Chart" .Chart "Release" .Release "Values" .Values -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-{{ $name }}
+  labels:
+    {{- include "chart.labels" $data | nindent 4 }}
+    {{- if .Values.service.labels }}
+    {{ toYaml .Values.service.labels | indent 4 }}
+    {{- end }}
+  {{- if or .Values.annotations .Values.service.annotations }}
+  annotations:
+    {{- if .Values.annotations }}
+    {{ toYaml .Values.annotations | indent 4 }}
+    {{- end }}
+    {{- if .Values.service.annotations }}
+    {{ toYaml .Values.service.annotations | indent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ $tcpPort }}
+      targetPort: tcpdns
+      protocol: TCP
+      name: tcp
+    - port: {{ $udpPort }}
+      targetPort: udpdns
+      protocol: UDP
+      name: udp
+    - port: {{ $httpPort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "chart.selectorLabels" $data | nindent 4 }}

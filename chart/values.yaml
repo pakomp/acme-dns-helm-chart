@@ -1,0 +1,273 @@
+
+global:
+  imageRegistry: ""
+  ## E.g.
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  imagePullSecrets: []
+  storageClass: ""
+
+  imageCredentials:
+    create: false
+    registry: gitlab.domain.com
+    username: someone
+    password: sillyness
+    email: obsessionsys@gmail.com
+image:
+  repository: joohoi/acme-dns
+  tag: v0.8
+
+  ## Specify a imagePullPolicy
+  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+  ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  ##
+  pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## Example:
+  ## pullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  pullSecrets: []
+
+## @param nameOverride String to partially override acme-dns.fullname template (will maintain the release name)
+##
+nameOverride: ""
+
+## @param fullnameOverride String to fully override acme-dns.fullname template
+##
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  name: ""
+
+replicaCount: 1
+
+## @param podAnnotations ACME DNS Pod annotations. Evaluated as a template
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
+podAnnotations: {}
+
+## @param updateStrategyType Update strategy type for ACME DNS statefulset
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+##
+updateStrategyType: RollingUpdate
+
+## @param affinity Affinity for pod assignment. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## Note: podAffinityPreset, podAntiAffinityPreset, and  nodeAffinityPreset will be ignored when it's set
+##
+affinity: {}
+
+## @param nodeSelector Node labels for pod assignment. Evaluated as a template
+## ref: https://kubernetes.io/docs/user-guide/node-selection/
+## nodeSelector: {}
+nodeSelector: {}
+
+## @param tolerations Tolerations for pod assignment. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+## tollerations: []
+tolerations: []
+
+annotations: {}
+
+## ACME DNS containers' resource requests and limits
+## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param resources.limits The resources limits for ACME DNS containers
+## @param resources.requests The requested resources for ACME DNS containers
+##
+resources: {}
+  ## Example:
+  ## limits:
+  ##    cpu: 1000m
+  ##    memory: 2Gi
+  ## limits: {}
+  ## Examples:
+  ## requests:
+  ##    cpu: 1000m
+  ##    memory: 2Gi
+  ## requests: {}
+
+## Configure ACME DNS containers' extra options for liveness probe
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+## @param livenessProbe.enabled Enable livenessProbe
+## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+## @param livenessProbe.periodSeconds Period seconds for livenessProbe
+## @param livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+## @param livenessProbe.failureThreshold Failure threshold for livenessProbe
+## @param livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  timeoutSeconds: 10
+  periodSeconds: 10
+  failureThreshold: 6
+  successThreshold: 1
+## Configure ACME DNS containers' extra options for readiness probe
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+## @param readinessProbe.enabled Enable readinessProbe
+## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+## @param readinessProbe.periodSeconds Period seconds for readinessProbe
+## @param readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+## @param readinessProbe.failureThreshold Failure threshold for readinessProbe
+## @param readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  timeoutSeconds: 3
+  periodSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+## @param customLivenessProbe Override default liveness probe
+##
+customLivenessProbe: {}
+
+## @param customReadinessProbe Override default readiness probe
+##
+customReadinessProbe: {}
+
+
+podManagementPolicy: OrderedReady
+
+## @section ACME DNS config.cfg with --set-file path_to_config/config.cfg
+ # if configFile is set, then appConfiguration section doen't use 
+configFile: []
+
+appConfiguration:
+  listenInterface: 127.0.0.1:53
+  protocol: "both"
+  # domain name to serve the requests off of
+  domain: "auth.example.com"
+  # zone name server
+  nsname: "auth.example.com"
+  # admin email address, where @ is substituted with .
+  nsadmin: "admin.auth.example.com"
+  # the public IP of your acme-dns server
+  publicIP: "198.51.100.1"
+  # debug messages from CORS etc
+  debug: false
+  ##### DATABASE SECTION
+  # Database engine to use, sqlite3 or postgres
+  engine: "sqlite3"
+  connection: "/var/lib/acme-dns/acme-dns.db"
+  # connection = "postgres://user:password@localhost/acmedns_db"
+  ##### API SECTION
+  # listen ip eg. 127.0.0.1
+  ip: "0.0.0.0"
+  # disable registration endpoint
+  disable_registration: false
+  # listen port, eg. 443 for default HTTPS
+  port: "80"
+  # possible values: "letsencrypt", "letsencryptstaging", "cert", "none"
+  tls: "none"
+  # only used if tls = "cert"
+  tls_cert_privkey: "/etc/tls/example.org/privkey.pem"
+  tls_cert_fullchain: "/etc/tls/example.org/fullchain.pem"
+  # only used if tls = "letsencrypt"
+  acme_cache_dir: "api-certs"
+  # optional e-mail address to which Let's Encrypt will send expiration notices for the API's cert
+  notification_email: ""
+  # use HTTP header to get the client ip
+  use_header: false
+  # header name to pull the ip address / list of ip addresses from
+  header_name: "X-Forwarded-For"
+  # logging level: "error", "warning", "info" or "debug"
+  loglevel: "debug"
+  # possible values: stdout, TODO file & integrations
+  logtype: "stdout"
+  # file path for logfile TODO
+  # logfile = "./acme-dns.log"
+  # format, either "json" or "text"
+  logformat: "json"
+
+  
+
+
+## @section Persistence parameters
+
+persistence:
+  ## @param persistence.enabled Enable ACME DNS data persistence using PVC
+  ##
+  enabled: true
+
+  ## @param persistence.storageClass PVC Storage Class for ACME DNS data volume
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  storageClass: ""
+  ## @param persistence.selector Selector to match an existing Persistent Volume
+  ## selector:
+  ##   matchLabels:
+  ##     app: my-app
+  ##
+  selector: {}
+  ## @param persistence.accessMode PVC Access Mode for ACME DNS data volume
+  ##
+  accessMode: ReadWriteOnce
+
+  ## @param persistence.existingClaim Provide an existing PersistentVolumeClaims
+  ## The value is evaluated as a template
+  ## So, for example, the name can depend on .Release or .Chart
+  ##
+  existingClaim: ""
+
+  ## @param persistence.size PVC Storage Request for ACME DNS data volume
+  ## If you change this value, you might have to adjust `acme-dns.diskFreeLimit` as well
+  ##
+  size: 5Gi
+
+  ## @param persistence.volumes Additional volumes without creating PVC
+  ##  - name: volume_name
+  ##    emptyDir: {}
+  ##
+  volumes: []
+  ## @param persistence.annotations Persistence annotations. Evaluated as a template
+  ## Example:
+  ## annotations:
+  ##   example.io/disk-volume-type: SSD
+  ##
+  annotations: {}
+
+  ## Kubernetes service type
+##
+service:
+  ## @param service.type Kubernetes Service type
+  ##
+  type: ClusterIP
+
+  ## @param
+  tcp:
+    port: 5053
+    containerPort: 53
+
+  ## @param
+  udp:
+    port: 5153
+    containerPort: 53
+
+  http:
+    port: 80
+    containerPort: 80
+  ## @param service.labels Service labels. Evaluated as a template
+  ##
+  labels: {}
+
+  ## @param service.annotations Service annotations. Evaluated as a template
+  ## Example:
+  ## annotations:
+  ##   service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+  ##
+  annotations: {}

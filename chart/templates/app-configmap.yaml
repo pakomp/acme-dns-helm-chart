@@ -1,0 +1,85 @@
+{{- $fullName := include "chart.fullname" . -}}
+{{- $name := "app" -}}
+{{- $data := dict "name" $name "Chart" .Chart "Release" .Release "Values" .Values -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-{{ $name }}
+  labels:
+    {{- include "chart.labels" $data | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+{{ toYaml .Values.annotations | indent 4 }}
+  {{- end }}
+data:
+{{- if .Values.configFile }}
+  advanced.config: |-
+{{ .Values.configFile | indent 4 }}
+{{- else }}
+  advanced.config: |-
+    [general]
+    # DNS interface. Note that systemd-resolved may reserve port 53 on 127.0.0.53
+    # In this case acme-dns will error out and you will need to define the listening interface
+    # for example: listen = "127.0.0.1:53"
+    listen = {{ .Values.appConfiguration.listenInterface | quote }}
+    # protocol, "both", "both4", "both6", "udp", "udp4", "udp6" or "tcp", "tcp4", "tcp6"
+    protocol = {{ .Values.appConfiguration.protocol }}
+    # domain name to serve the requests off of
+    domain = {{ .Values.appConfiguration.domain | quote }}
+    # zone name server
+    nsname = {{ .Values.appConfiguration.nsname | quote }}
+    # admin email address, where @ is substituted with .
+    nsadmin = {{ .Values.appConfiguration.nsadmin | quote }}
+    # predefined records served in addition to the TXT
+    records = [
+        # domain pointing to the public IP of your acme-dns server
+        "{{ .Values.appConfiguration.domain }}. A {{ .Values.appConfiguration.publicIP }}",
+        # specify that auth.example.org will resolve any *.auth.example.org records
+        "{{ .Values.appConfiguration.nsname }}. NS {{ .Values.appConfiguration.domain }}.",
+    ]
+    # debug messages from CORS etc
+    debug = {{ .Values.appConfiguration.debug }}
+
+    [database]
+    # Database engine to use, sqlite3 or postgres
+    engine = {{ .Values.appConfiguration.engine | quote }}
+    # Connection string, filename for sqlite3 and postgres://$username:$password@$host/$db_name for postgres
+    # Please note that the default Docker image uses path /var/lib/acme-dns/acme-dns.db for sqlite3
+    connection = {{ .Values.appConfiguration.connection | quote }}
+    # connection = "postgres://user:password@localhost/acmedns_db"
+
+    [api]
+    # listen ip eg. 127.0.0.1
+    ip = {{ .Values.appConfiguration.ip | quote }}
+    # disable registration endpoint
+    disable_registration = {{ .Values.appConfiguration.disable_registration | quote }}
+    # listen port, eg. 443 for default HTTPS
+    port = {{ .Values.appConfiguration.port | quote }}
+    # possible values: "letsencrypt", "letsencryptstaging", "cert", "none"
+    tls = {{ .Values.appConfiguration.tls | quote }}
+    # only used if tls = "cert"
+    tls_cert_privkey = {{ .Values.appConfiguration.tls_cert_privkey | quote }}
+    tls_cert_fullchain = {{ .Values.appConfiguration.tls_cert_fullchain | quote }}
+    # only used if tls = "letsencrypt"
+    acme_cache_dir = {{ .Values.appConfiguration.acme_cache_dir | quote }}
+    # optional e-mail address to which Let's Encrypt will send expiration notices for the API's cert
+    notification_email = {{ .Values.appConfiguration.notification_email | quote }}
+    # CORS AllowOrigins, wildcards can be used
+    corsorigins = [
+        "*"
+    ]
+    # use HTTP header to get the client ip
+    use_header = {{ .Values.appConfiguration.use_header | quote }}
+    # header name to pull the ip address / list of ip addresses from
+    header_name = {{ .Values.appConfiguration.header_name | quote }}
+
+    [logconfig]
+    # logging level: "error", "warning", "info" or "debug"
+    loglevel = {{ .Values.appConfiguration.loglevel | quote }}
+    # possible values: stdout, TODO file & integrations
+    logtype = {{ .Values.appConfiguration.logtype | quote }}
+    # file path for logfile TODO
+    # logfile = "./acme-dns.log"
+    # format, either "json" or "text"
+    logformat = {{ .Values.appConfiguration.logformat | quote }}
+{{- end }}

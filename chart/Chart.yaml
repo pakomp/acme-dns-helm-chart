@@ -1,0 +1,20 @@
+annotations:
+  category: DNS Application
+apiVersion: v2
+appVersion: 0.8.0
+description: A Helm chart for a ACME-DNS
+engine: gotpl
+home: https://github.com/obsessionsys/acme-dns-helm-chart
+name: acme-dns
+version: 0.1.5
+keywords:
+- go
+- dns
+- certmanager
+- application
+- cluster
+maintainers:
+- email: dev.ops.fedorov@gmail.com
+  name: Fedorov Vitaly
+sources:
+- https://github.com/obsessionsys/acme-dns-helm-chart
