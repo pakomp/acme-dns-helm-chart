@@ -23,7 +23,7 @@ data:
     # for example: listen = "127.0.0.1:53"
     listen = {{ .Values.appConfiguration.listenInterface | quote }}
     # protocol, "both", "both4", "both6", "udp", "udp4", "udp6" or "tcp", "tcp4", "tcp6"
-    protocol = {{ .Values.appConfiguration.protocol }}
+    protocol = {{ .Values.appConfiguration.protocol | quote }}
     # domain name to serve the requests off of
     domain = {{ .Values.appConfiguration.domain | quote }}
     # zone name server
@@ -52,7 +52,7 @@ data:
     # listen ip eg. 127.0.0.1
     ip = {{ .Values.appConfiguration.ip | quote }}
     # disable registration endpoint
-    disable_registration = {{ .Values.appConfiguration.disable_registration | quote }}
+    disable_registration = {{ .Values.appConfiguration.disable_registration }}
     # listen port, eg. 443 for default HTTPS
     port = {{ .Values.appConfiguration.port | quote }}
     # possible values: "letsencrypt", "letsencryptstaging", "cert", "none"
@@ -69,7 +69,7 @@ data:
         "*"
     ]
     # use HTTP header to get the client ip
-    use_header = {{ .Values.appConfiguration.use_header | quote }}
+    use_header = {{ .Values.appConfiguration.use_header }}
     # header name to pull the ip address / list of ip addresses from
     header_name = {{ .Values.appConfiguration.header_name | quote }}
 
